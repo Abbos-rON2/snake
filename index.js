@@ -6,7 +6,25 @@ const state = {
   direction: 'right',
   map: [],
   body: [[8, 5], [8, 4], [8, 3], [8, 2],],
+  score: 0,
 };
+
+const overlay = document.createElement('div');
+const gameOverModal = document.createElement('div');
+const gameOverMessage = document.createElement('div');
+const gameOverScore = document.createElement('div')
+
+overlay.className = 'overlay';
+gameOverModal.className = 'modal';
+gameOverMessage.innerText = 'Game Over!';
+gameOverMessage.className = 'gameOverMessage';
+gameOverScore.className = 'gameOverScore';
+
+document.body.append(overlay)
+document.body.append(gameOverModal);
+gameOverModal.append(gameOverMessage);
+gameOverModal.append(gameOverScore);
+
 
 function randomInteger(min, max) {
   // случайное число от min до (max+1)
@@ -14,13 +32,15 @@ function randomInteger(min, max) {
   return Math.floor(rand);
 }
 function gameOver() {
-  console.log('GAME OVER'); clearInterval(stepInterval);
+  clearInterval(stepInterval);
+  gameOverScore.innerText = `Your Score: ${state.score}`;
+  gameOverModal.classList.add('active');
 }
 function food() {
   const map = state.map;
   const coord = [randomInteger(1, 17), randomInteger(1, 17)]
   if (map[coord[0]][coord[1]] == '') {
-    map[coord[0]][coord[1]] = 'food'
+    map[coord[0]][coord[1]] = 'food';
   } else {
     food();
   }
@@ -45,12 +65,11 @@ function step() {
   const map = state.map;
   const x = body[0][0];
   const y = body[0][1]
-  console.log(x, y)
   switch (state.direction) {
     case 'right':
       if (state.direction !== 'left') {
         if (map[x][y + 1] === '' || map[x][y + 1] == 'food') {
-          if (map[x][y + 1] == 'food') { body.push(body[body.length - 1]); food(); }
+          if (map[x][y + 1] == 'food') { body.push(body[body.length - 1]); state.score = state.score + 1; food(); }
           body.unshift([x, y + 1]);
         } else { gameOver(); return null; }
       }
@@ -58,7 +77,7 @@ function step() {
     case 'top':
       if (state.direction !== 'bottom') {
         if (map[x - 1][y] === '' || map[x - 1][y] == 'food') {
-          if (map[x - 1][y] == 'food') { body.push(body[body.length - 1]); food(); }
+          if (map[x - 1][y] == 'food') { body.push(body[body.length - 1]); state.score = state.score + 1; food(); }
           body.unshift([x - 1, y]);
         } else { gameOver(); return null; }
       }
@@ -66,7 +85,7 @@ function step() {
     case 'bottom':
       if (state.direction !== 'top') {
         if (map[x + 1][y] === '' || map[x + 1][y] == 'food') {
-          if (map[x + 1][y] == 'food') { body.push(body[body.length - 1]); food(); }
+          if (map[x + 1][y] == 'food') { body.push(body[body.length - 1]); state.score = state.score + 1; food(); }
           body.unshift([x + 1, y]);
         } else { gameOver(); return null; }
       }
@@ -74,7 +93,7 @@ function step() {
     case 'left':
       if (state.direction !== 'right') {
         if (map[x][y - 1] === '' || map[x][y - 1] == 'food') {
-          if (map[x][y - 1] == 'food') { body.push(body[body.length - 1]); food(); }
+          if (map[x][y - 1] == 'food') { body.push(body[body.length - 1]); state.score = state.score + 1; food(); }
           body.unshift([x, y - 1]);
         } else { gameOver(); return null; }
       }
@@ -127,9 +146,9 @@ function init() {
 init();
 document.addEventListener('keydown', (e) => {
   if (state.game === false) {
+    state.game = true;
     food();
     stepInterval = setInterval(() => {
-      state.game = true;
       step();
       render();
     }, 500)
